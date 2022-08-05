@@ -20,6 +20,7 @@
 #include <errno.h>
 #include "locker.h"
 #include <sys/uio.h>
+#include "lst_timer.h"
 
 class http_conn
 {
@@ -91,9 +92,11 @@ private:
 public:
     static int m_epollfd;       // 所有socket上的事件都被注册到同一个epoll内核事件中，所以设置成静态的
     static int m_user_count;    // 统计用户的数量
-
+    
+    int m_sockfd;               // 该HTTP连接的socket和对方的socket地址
+    util_timer* timer;          // 定时器
 private:
-    int m_sockfd;           // 该HTTP连接的socket和对方的socket地址
+
     sockaddr_in m_address;
     
     char m_read_buf[ READ_BUFFER_SIZE ];    // 读缓冲区
