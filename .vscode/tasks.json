@@ -9,7 +9,9 @@
 				"-fdiagnostics-color=always",
 				"-g",
 				"*.cpp",
-				"-pthread",
+				"-lpthread",
+				"-lmysqlclient",
+				"-std=c++11",
 				"-o",
 				"${fileDirname}/${fileBasenameNoExtension}"
 			],

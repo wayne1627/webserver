@@ -8,8 +8,7 @@
 #include <string.h>
 #include <iostream>
 #include <string>
-#include "../lock/locker.h"
-#include "../log/log.h"
+#include "locker.h"
 
 using namespace std;
 
@@ -24,7 +23,7 @@ public:
 	//单例模式
 	static connection_pool *GetInstance();
 
-	void init(string url, string User, string PassWord, string DataBaseName, int Port, int MaxConn, int close_log); 
+	void init(string url, string User, string PassWord, string DataBaseName, int Port, int MaxConn); 
 
 private:
 	connection_pool();
@@ -38,7 +37,7 @@ private:
 	sem reserve;
 
 public:
-	string m_url;			 //主机地址
+	string m_url;		 //主机地址
 	string m_Port;		 //数据库端口号
 	string m_User;		 //登陆数据库用户名
 	string m_PassWord;	 //登陆数据库密码

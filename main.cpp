@@ -12,6 +12,7 @@
 #include "threadpool.h"
 #include "http_conn.h"
 #include "lst_timer.h"
+#include "sql_connection_pool.h"
 
 #define MAX_FD 65536   // 最大的文件描述符个数
 #define MAX_EVENT_NUMBER 10000  // 监听的最大的事件数量
@@ -78,6 +79,12 @@ int main( int argc, char* argv[] ) {
     }
 
     http_conn* users = new http_conn[ MAX_FD ];
+    //初始化数据库连接池
+    connection_pool *connPool = connection_pool::GetInstance();
+    connPool->init("localhost", "root", "Aa123456", "webserver", 3306, 8);
+
+    //初始化数据库读取表
+    users->initmysql_result(connPool);
 
     int listenfd = socket( PF_INET, SOCK_STREAM, 0 );
     printf("listenfd=%i\n", listenfd);

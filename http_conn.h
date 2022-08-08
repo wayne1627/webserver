@@ -21,6 +21,7 @@
 #include "locker.h"
 #include <sys/uio.h>
 #include "lst_timer.h"
+#include "sql_connection_pool.h"
 
 class http_conn
 {
@@ -65,6 +66,7 @@ public:
     void process(); // 处理客户端请求
     bool read();// 非阻塞读
     bool write();// 非阻塞写
+    void initmysql_result(connection_pool *connPool);
 private:
     void init();    // 初始化连接
     HTTP_CODE process_read();    // 解析HTTP请求
@@ -95,6 +97,7 @@ public:
     
     int m_sockfd;               // 该HTTP连接的socket和对方的socket地址
     util_timer* timer;          // 定时器
+    MYSQL *mysql;
 private:
 
     sockaddr_in m_address;
@@ -107,6 +110,7 @@ private:
     CHECK_STATE m_check_state;              // 主状态机当前所处的状态
     METHOD m_method;                        // 请求方法
 
+    char *m_string; //存储请求content数据
     char m_real_file[ FILENAME_LEN ];       // 客户请求的目标文件的完整路径，其内容等于 doc_root + m_url, doc_root是网站根目录
     char* m_url;                            // 客户请求的目标文件的文件名
     char* m_version;                        // HTTP协议版本号，我们仅支持HTTP1.1
