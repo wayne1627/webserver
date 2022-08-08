@@ -80,6 +80,7 @@ int main( int argc, char* argv[] ) {
     http_conn* users = new http_conn[ MAX_FD ];
 
     int listenfd = socket( PF_INET, SOCK_STREAM, 0 );
+    printf("listenfd=%i\n", listenfd);
 
     int ret = 0;
     struct sockaddr_in address;
@@ -134,7 +135,7 @@ int main( int argc, char* argv[] ) {
                 struct sockaddr_in client_address;
                 socklen_t client_addrlength = sizeof( client_address );
                 int connfd = accept( listenfd, ( struct sockaddr* )&client_address, &client_addrlength );
-                printf("------create new fd:%i------", connfd);
+                printf("------create new fd:%i------\n", connfd);
                 if ( connfd < 0 ) {
                     printf( "errno is: %d\n", errno );
                     continue;

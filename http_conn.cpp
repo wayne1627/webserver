@@ -163,6 +163,8 @@ http_conn::HTTP_CODE http_conn::parse_request_line(char* text) {
     char* method = text;
     if ( strcasecmp(method, "GET") == 0 ) { // 忽略大小写比较
         m_method = GET;
+    } else if ( strcasecmp(method, "POST") == 0 ) { // useless for now
+        m_method = POST;
     } else {
         return BAD_REQUEST;
     }
@@ -184,6 +186,9 @@ http_conn::HTTP_CODE http_conn::parse_request_line(char* text) {
         // 在参数 str 所指向的字符串中搜索第一次出现字符 c（一个无符号字符）的位置。
         m_url = strchr( m_url, '/' );
     }
+    //当url为/时，显示判断界面
+    if (strlen(m_url) == 1)
+        strcat(m_url, "judge.html");
     if ( !m_url || m_url[0] != '/' ) {
         return BAD_REQUEST;
     }
@@ -246,7 +251,7 @@ http_conn::HTTP_CODE http_conn::process_read() {
         // 获取一行数据
         text = get_line();
         m_start_line = m_checked_idx;
-        printf( "fd %i : got 1 http line: %s\n", m_sockfd, text );
+        // printf( "fd %i : got 1 http line: %s\n", m_sockfd, text );
 
         switch ( m_check_state ) {
             case CHECK_STATE_REQUESTLINE: {
@@ -286,10 +291,31 @@ http_conn::HTTP_CODE http_conn::process_read() {
 // 映射到内存地址m_file_address处，并告诉调用者获取文件成功
 http_conn::HTTP_CODE http_conn::do_request()
 {
-    // "/home/nowcoder/webserver/resources"
+    const char *p = strrchr(m_url, '/');
+    // "./resources"
     strcpy( m_real_file, doc_root );
     int len = strlen( doc_root );
-    strncpy( m_real_file + len, m_url, FILENAME_LEN - len - 1 ); // remaining length
+
+    if (*(p + 1) == '0')
+    {
+        char *m_url_real = (char *)malloc(sizeof(char) * 200);
+        strcpy(m_url_real, "/register.html");
+        strncpy(m_real_file + len, "/register.html", strlen("/register.html"));
+
+        free(m_url_real);
+    }
+    else if (*(p + 1) == '1')
+    {
+        char *m_url_real = (char *)malloc(sizeof(char) * 200);
+        strcpy(m_url_real, "/log.html");
+        strncpy(m_real_file + len, m_url_real, strlen(m_url_real));
+
+        free(m_url_real);
+    } else { // the last condition is for default
+        strncpy( m_real_file + len, m_url, FILENAME_LEN - len - 1 ); // remaining length
+    }
+
+
     // 获取m_real_file文件的相关的状态信息，-1失败，0成功
     if ( stat( m_real_file, &m_file_stat ) < 0 ) {
         return NO_RESOURCE;
