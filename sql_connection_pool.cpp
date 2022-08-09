@@ -10,13 +10,13 @@
 
 using namespace std;
 
-connection_pool::connection_pool()
+connection_pool::connection_pool() // constructor
 {
 	m_CurConn = 0;
 	m_FreeConn = 0;
 }
 
-connection_pool *connection_pool::GetInstance()
+connection_pool *connection_pool::GetInstance() // return a connPool class which maintain a connection list
 {
 	static connection_pool connPool;
 	return &connPool;
@@ -34,23 +34,23 @@ void connection_pool::init(string url, string User, string PassWord, string DBNa
 	for (int i = 0; i < MaxConn; i++)
 	{
 		MYSQL *con = NULL;
-		con = mysql_init(con);
+		con = mysql_init(con); // initiate one mysql connection
 
 		if (con == NULL)
 		{
 			exit(1);
 		}
-		con = mysql_real_connect(con, url.c_str(), User.c_str(), PassWord.c_str(), DBName.c_str(), Port, NULL, 0);
+		con = mysql_real_connect(con, url.c_str(), User.c_str(), PassWord.c_str(), DBName.c_str(), Port, NULL, 0); // connect
 
 		if (con == NULL)
 		{
 			exit(1);
 		}
-		connList.push_back(con);
-		++m_FreeConn;
+		connList.push_back(con); // push mysql-connection into connection-list
+		++m_FreeConn; // calculate the free connection numbers
 	}
 
-	reserve = sem(m_FreeConn);
+	reserve = sem(m_FreeConn); // segmaphore
 
 	m_MaxConn = m_FreeConn;
 }
@@ -64,11 +64,11 @@ MYSQL *connection_pool::GetConnection()
 	if (0 == connList.size())
 		return NULL;
 
-	reserve.wait();
+	reserve.wait(); // wait() = -1
 	
 	lock.lock();
 
-	con = connList.front();
+	con = connList.front(); // take the front one connection
 	connList.pop_front();
 
 	--m_FreeConn;
@@ -92,12 +92,12 @@ bool connection_pool::ReleaseConnection(MYSQL *con)
 
 	lock.unlock();
 
-	reserve.post();
+	reserve.post(); // post() = +1
 	return true;
 }
 
 //销毁数据库连接池
-void connection_pool::DestroyPool()
+void connection_pool::DestroyPool() // close all the mysql connection
 {
 
 	lock.lock();
@@ -128,10 +128,11 @@ connection_pool::~connection_pool()
 	DestroyPool();
 }
 
-connectionRAII::connectionRAII(MYSQL **SQL, connection_pool *connPool){
-	*SQL = connPool->GetConnection();
+connectionRAII::connectionRAII(MYSQL **SQL, connection_pool *connPool){ // use this class indeed, not the class connPool
+	*SQL = connPool->GetConnection(); // return one mysql connection
 	
-	conRAII = *SQL;
+	// this two line below works for ~connectionRAII()
+	conRAII = *SQL;      
 	poolRAII = connPool;
 }
 

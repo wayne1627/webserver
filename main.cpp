@@ -71,20 +71,20 @@ int main( int argc, char* argv[] ) {
     int port = atoi( argv[1] );
 
 
-    threadpool< http_conn >* pool = NULL;
-    try {
-        pool = new threadpool<http_conn>;
-    } catch( ... ) {
-        return 1;
-    }
-
     http_conn* users = new http_conn[ MAX_FD ];
     //初始化数据库连接池
-    connection_pool *connPool = connection_pool::GetInstance();
+    connection_pool *connPool = connection_pool::GetInstance(); // singleton to get a one object
     connPool->init("localhost", "root", "Aa123456", "webserver", 3306, 8);
 
     //初始化数据库读取表
     users->initmysql_result(connPool);
+
+    threadpool< http_conn >* pool = NULL;
+    try {
+        pool = new threadpool<http_conn>(connPool);
+    } catch( ... ) {
+        return 1;
+    }
 
     int listenfd = socket( PF_INET, SOCK_STREAM, 0 );
     printf("listenfd=%i\n", listenfd);
@@ -107,8 +107,6 @@ int main( int argc, char* argv[] ) {
     // 添加到epoll对象中
     addfd( epollfd, listenfd, false );
     http_conn::m_epollfd = epollfd;
-
-    
 
     // 创建管道
     ret = socketpair(PF_UNIX, SOCK_STREAM, 0, pipefd);

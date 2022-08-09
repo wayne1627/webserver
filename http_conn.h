@@ -22,6 +22,7 @@
 #include <sys/uio.h>
 #include "lst_timer.h"
 #include "sql_connection_pool.h"
+#include <map>
 
 class http_conn
 {
@@ -98,6 +99,8 @@ public:
     int m_sockfd;               // 该HTTP连接的socket和对方的socket地址
     util_timer* timer;          // 定时器
     MYSQL *mysql;
+    locker m_lock;
+    map<string, string> users;
 private:
 
     sockaddr_in m_address;

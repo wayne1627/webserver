@@ -1,6 +1,4 @@
 #include "http_conn.h"
-#include <map>
-#include <string>
 #include "sql_connection_pool.h"
 
 // 定义HTTP响应的一些状态信息
@@ -14,8 +12,6 @@ const char* error_404_form = "The requested file was not found on this server.\n
 const char* error_500_title = "Internal Error";
 const char* error_500_form = "There was an unusual problem serving the requested file.\n";
 
-locker m_lock;
-map<string, string> users;
 void http_conn::initmysql_result(connection_pool *connPool)
 {
     //先从连接池中取一个连接
@@ -44,7 +40,9 @@ void http_conn::initmysql_result(connection_pool *connPool)
         string temp1(row[0]);
         string temp2(row[1]);
         users[temp1] = temp2;
+        cout << temp1 << " " << temp2 << endl;
     }
+    mysql_free_result(result);
 }
 
 // 网站的根目录
@@ -339,7 +337,7 @@ http_conn::HTTP_CODE http_conn::do_request()
     {
 
         //根据标志判断是登录检测还是注册检测
-        char flag = m_url[1];
+        // char flag = m_url[1];
 
         char *m_url_real = (char *)malloc(sizeof(char) * 200);
         strcpy(m_url_real, "/");
@@ -365,12 +363,13 @@ http_conn::HTTP_CODE http_conn::do_request()
             //如果是注册，先检测数据库中是否有重名的
             //没有重名的，进行增加数据
             char *sql_insert = (char *)malloc(sizeof(char) * 200);
-            strcpy(sql_insert, "INSERT INTO user(username, passwd) VALUES(");
+            strcpy(sql_insert, "INSERT INTO user (username, passwd) VALUES(");
             strcat(sql_insert, "'");
             strcat(sql_insert, name);
             strcat(sql_insert, "', '");
             strcat(sql_insert, password);
             strcat(sql_insert, "')");
+            printf("%s", sql_insert);
 
             if (users.find(name) == users.end())
             {
