@@ -12,12 +12,8 @@ const char* error_404_form = "The requested file was not found on this server.\n
 const char* error_500_title = "Internal Error";
 const char* error_500_form = "There was an unusual problem serving the requested file.\n";
 
-void http_conn::initmysql_result(connection_pool *connPool)
+void http_conn::initmysql_result()
 {
-    //先从连接池中取一个连接
-    MYSQL *mysql = NULL;
-    connectionRAII mysqlcon(&mysql, connPool);
-
     //在user表中检索username，passwd数据，浏览器端输入
     if (mysql_query(mysql, "SELECT username,passwd FROM user"))
     {
@@ -335,9 +331,7 @@ http_conn::HTTP_CODE http_conn::do_request()
     //处理cgi
     if ((*(p + 1) == '2' || *(p + 1) == '3')) // only judge the first char
     {
-
-        //根据标志判断是登录检测还是注册检测
-        // char flag = m_url[1];
+        initmysql_result();
 
         char *m_url_real = (char *)malloc(sizeof(char) * 200);
         strcpy(m_url_real, "/");
@@ -369,7 +363,6 @@ http_conn::HTTP_CODE http_conn::do_request()
             strcat(sql_insert, "', '");
             strcat(sql_insert, password);
             strcat(sql_insert, "')");
-            printf("%s", sql_insert);
 
             if (users.find(name) == users.end())
             {

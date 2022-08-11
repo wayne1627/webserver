@@ -76,9 +76,6 @@ int main( int argc, char* argv[] ) {
     connection_pool *connPool = connection_pool::GetInstance(); // singleton to get a one object
     connPool->init("localhost", "root", "Aa123456", "webserver", 3306, 8);
 
-    //初始化数据库读取表
-    users->initmysql_result(connPool);
-
     threadpool< http_conn >* pool = NULL;
     try {
         pool = new threadpool<http_conn>(connPool);
